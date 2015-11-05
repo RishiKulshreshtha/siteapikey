@@ -1,0 +1,64 @@
+<?php
+
+/**
+ * @file
+ * This module provides API Key field at the Site Information page and some
+ * conditional requirements.
+ */
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function siteapikey_form_system_site_information_settings_alter(&$form, &$form_state, $form_id) {
+  $form['siteapikey'] = array(
+    '#type' => 'textfield',
+    '#title' => t('API Key'),
+    '#default_value' => variable_get('siteapikey', 'No API Key yet'),
+    '#size' => 60,
+    '#maxlength' => 128,
+  );
+  $form['actions']['submit']['#value'] = 'Update Configuration';
+  $form['#submit'][] = 'siteapikey_form_system_site_information_settings_submit';
+}
+
+/**
+ * Form submission handler.
+ */
+function siteapikey_form_system_site_information_settings_submit($form_id, &$form_state) {
+  $siteapikey = $form_state['values']['siteapikey'];
+  if (isset($siteapikey) && !empty($siteapikey)) {
+    variable_set('siteapikey', $siteapikey);
+    drupal_set_message(t('Site API Key has been saved with %siteapikey value.', array('%siteapikey' => $siteapikey)), 'status');
+  }
+  else {
+    variable_set('siteapikey', 'No API Key yet');
+  }
+}
+
+/**
+ * Implements hook_menu().
+ */
+function siteapikey_menu() {
+  $items = array();
+  $items['page_json/%/%'] = array(
+    'title' => 'Page JSON',
+    'page callback' => 'siteapikey_json',
+    'access callback' => TRUE,
+    'page arguments' => array(1, 2),
+  );
+
+  return $items;
+}
+
+/**
+ * Helper function.
+ */
+function siteapikey_json($siteapikey, $nid) {
+  $node = node_load($nid);
+  if (variable_get('siteapikey') && $siteapikey == variable_get('siteapikey') && $node->nid && $node->type == 'page') {
+    drupal_json_output($node);
+  }
+  else {
+    drupal_access_denied();
+  }
+}

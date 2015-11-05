@@ -1,0 +1,4 @@
+name = Site API Key
+description = Providing API Key field and some conditional requirements.
+package = Custom
+core = 7.x
